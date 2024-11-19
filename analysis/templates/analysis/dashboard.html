@@ -1,16 +1,31 @@
-<h1>Dashboard de Análises</h1>
-<img src="data:image/png;base64,{{ chart }}" alt="Gêneros Mais Populares">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard de Análises</h1>
 
-<h2>Top 10 Filmes Mais Votados</h2>
-<ul>
-    {% for movie in top_movies %}
-    <li>{{ movie.title }} - Nota: {{ movie.imdbAverageRating }} ({{ movie.imdbNumVotes }} votos)</li>
-    {% endfor %}
-</ul>
+    <h2>Dias Mais Assistidos</h2>
+    <img src="data:image/png;base64,{{ chart_day }}" alt="Gráfico de Dias da Semana">
 
-<h2>Top 10 Séries Mais Votadas</h2>
-<ul>
-    {% for series in top_series %}
-    <li>{{ series.title }} - Nota: {{ series.imdbAverageRating }} ({{ series.imdbNumVotes }} votos)</li>
-    {% endfor %}
-</ul>
+    <h2>Frequência por Mês</h2>
+    <img src="data:image/png;base64,{{ chart_month }}" alt="Gráfico de Frequência por Mês">
+
+    <h2>Filmes Mais Assistidos</h2>
+    <ul>
+        {% for movie, count in top_movies.items %}
+        <li>{{ movie }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Séries Mais Assistidas</h2>
+    <ul>
+        {% for series, count in top_series.items %}
+        <li>{{ series }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
