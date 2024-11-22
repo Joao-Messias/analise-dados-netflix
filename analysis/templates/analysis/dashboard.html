@@ -101,9 +101,23 @@
     <!-- Top 5 Títulos Mais Vistos -->
     <div class="col-md-3">
         <div class="card">
-            <div class="metric-title">Top 5 Títulos</div>
-            <div class="metric-value">{{ top_5_titles}}</div>
-        </div>
+            <div class="metric-title">Top 5 Títulos mais assistidos</div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Total de Horas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for title in top_5_titles %}
+                        <tr>
+                            <td>{{ title.Base_Title }}</td>
+                            <td>{{ title.Total_Hours }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
     </div>
 </div>
 
