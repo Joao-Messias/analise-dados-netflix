@@ -3,14 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload CSV</title>
+    <title>Upload do Arquivo CSV</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Upload do Dataset</h1>
-    <form method="post" enctype="multipart/form-data">
+<div class="container mt-5">
+    <h1 class="text-center">Upload do Arquivo CSV</h1>
+    <p class="text-center">Faça o upload do arquivo CSV para iniciar a análise.</p>
+
+    <form method="post" enctype="multipart/form-data" class="mt-4">
         {% csrf_token %}
-        <input type="file" name="file" accept=".csv">
-        <button type="submit">Enviar</button>
+        <div class="form-group">
+            <input type="file" name="file" accept=".csv" class="form-control" required>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Enviar</button>
+        </div>
     </form>
+
+    {% if error %}
+        <div class="alert alert-danger mt-3">{{ error }}</div>
+    {% endif %}
+</div>
 </body>
 </html>
