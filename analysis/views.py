@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 from netflix import settings
@@ -5,6 +7,8 @@ from .services.file_handler import FileHandler
 from .services.data_cleaner import DataCleaner
 import logging
 import pandas as pd
+
+from .services.metrics_handler import MetricsHandler
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +52,17 @@ def analysis_dashboard(request):
     # Converte o JSON de volta para um DataFrame
     df = pd.read_json(uploaded_data)
 
+    # Calcula as métricas
+    total_sessions = MetricsHandler.total_sessions(df)
+    total_time = MetricsHandler.total_time_consumed(df)
+    ranking_by_hours = MetricsHandler.activity_ranking_by_hours(df).head(5)  # Top 5
+
     # Faz análises ou processa os dados para gráficos
     context = {
         'data_summary': df.describe().to_html(classes="table table-striped"),
-        # Adicione aqui os dados para gráficos ou tabelas
+        'total_sessions': total_sessions,
+        'total_time': total_time,
+        'ranking_by_hours': ranking_by_hours.to_dict(orient='records'),  # Passar como lista de dicionários
     }
+
     return render(request, 'analysis/dashboard.html', context)
