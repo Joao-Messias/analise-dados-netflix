@@ -58,13 +58,18 @@ def analysis_dashboard(request):
     ranking_by_hours = MetricsHandler.activity_ranking_by_hours(df).head(5)  # Top 5
     top_5_titles = MetricsHandler.top_5_titles_by_duration(df)
 
+    # Gera o gráfico de comparação filmes vs séries
+    movie_vs_series_chart = MetricsHandler.generate_movie_vs_series_chart(df)
+
+
     # Faz análises ou processa os dados para gráficos
     context = {
         'data_summary': df.describe().to_html(classes="table table-striped"),
         'total_sessions': total_sessions,
         'total_time': total_time,
         'ranking_by_hours': ranking_by_hours.to_dict(orient='records'),  # Passar como lista de dicionários
-        'top_5_titles': top_5_titles.to_dict(orient='records'),  
+        'top_5_titles': top_5_titles.to_dict(orient='records'),
+        'movie_vs_series_chart': movie_vs_series_chart,  # Gráfico em Base64
     }
 
 

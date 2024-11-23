@@ -1,4 +1,10 @@
+import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # Força o uso de um backend sem GUI
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
 class MetricsHandler:
     @staticmethod
@@ -73,3 +79,70 @@ class MetricsHandler:
                 raise ValueError(f"Erro ao calcular os top 5 títulos: {e}")
         else:
             raise ValueError("As colunas necessárias ('Title', 'Duration') não foram encontradas.")
+
+    @staticmethod
+    def movie_vs_series_count(data):
+        """
+        Retorna a contagem de filmes e séries assistidos por perfil.
+        """
+        if 'Profile_Name' in data.columns and 'type' in data.columns:
+            try:
+                # Conta o número de filmes e séries por perfil
+                count_data = data.groupby(['Profile_Name', 'type']).size().reset_index(name='Count')
+
+                # Reestrutura os dados para uma tabela pivô (colunas: filmes/séries, linhas: perfis, valores: contagens)
+                pivot_data = count_data.pivot_table(
+                    index='Profile_Name', columns='type', values='Count', aggfunc='sum'
+                ).fillna(0)
+
+                # Adiciona total de filmes e séries para quem não assistiu um dos tipos
+                if 'movie' not in pivot_data.columns:
+                    pivot_data['movie'] = 0
+                if 'tv series' not in pivot_data.columns:
+                    pivot_data['tv series'] = 0
+
+                return pivot_data
+            except Exception as e:
+                raise ValueError(f"Erro ao calcular a contagem de filmes e séries: {e}")
+        else:
+            raise ValueError("As colunas necessárias ('Profile_Name', 'type') não foram encontradas.")
+
+    @staticmethod
+    def generate_movie_vs_series_chart(data):
+        """
+        Gera um gráfico de barras agrupadas comparando a quantidade de filmes e séries assistidos por perfil.
+        """
+        try:
+            # Gera os dados para o gráfico
+            count_data = MetricsHandler.movie_vs_series_count(data)
+
+            # Configuração do gráfico
+            profiles = count_data.index
+            x = np.arange(len(profiles))  # Índices das barras (uma barra por perfil)
+            bar_width = 0.35  # Largura de cada barra
+
+            plt.figure(figsize=(12, 6))
+
+            # Barras para filmes
+            plt.bar(x - bar_width / 2, count_data['movie'], width=bar_width, label='Filmes', color='blue')
+
+            # Barras para séries
+            plt.bar(x + bar_width / 2, count_data['tv series'], width=bar_width, label='Séries', color='orange')
+
+            # Configuração dos eixos e rótulos
+            plt.xlabel('Perfis', fontsize=12)
+            plt.ylabel('Quantidade Assistida', fontsize=12)
+            plt.title('Comparação: Filmes vs Séries por Perfil', fontsize=14)
+            plt.xticks(x, profiles, rotation=45, ha='right', fontsize=10)
+            plt.legend(title='Tipo', fontsize=10)
+            plt.tight_layout()
+
+            # Salvar o gráfico como uma imagem base64 para exibir no HTML
+            buffer = BytesIO()
+            plt.savefig(buffer, format='png')
+            buffer.seek(0)
+            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            buffer.close()
+            return image_base64
+        except Exception as e:
+            raise ValueError(f"Erro ao gerar o gráfico de comparação filmes vs séries: {e}")
