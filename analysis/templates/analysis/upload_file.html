@@ -6,24 +6,72 @@
     <title>Upload do Arquivo CSV</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
+
+<style>
+    body {
+        background-color: #141414;
+        color: #e5e5e5;
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centraliza horizontalmente */
+    }
+
+    h1 {
+        color: #ffffff;
+        text-shadow: 2px 2px 4px #e50914;
+        margin-top: 30px; /* Adiciona espaço no topo */
+        margin-bottom: 20px; /* Espaço entre o título e o formulário */
+    }
+
+    .btn-primary {
+        background-color: #e50914;
+        border: none;
+    }
+
+    .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .form-group {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .form-group input {
+        margin-right: 10px; /* Espaçamento entre o input e o botão */
+    }
+
+</style>
+
 <body>
-<div class="container mt-5">
     <h1 class="text-center">Upload do Arquivo CSV</h1>
     <p class="text-center">Faça o upload do arquivo CSV para iniciar a análise.</p>
 
-    <form method="post" enctype="multipart/form-data" class="mt-4">
-        {% csrf_token %}
-        <div class="form-group">
-            <input type="file" name="file" accept=".csv" class="form-control" required>
-        </div>
-        <div class="text-center">
-            <button type="submit" class="btn btn-primary">Enviar</button>
-        </div>
-    </form>
+    <div class="form-container">
+        <form method="post" enctype="multipart/form-data" class="mt-6 w-100">
+            {% csrf_token %}
+            <div class="form-group d-flex justify-content-center align-items-center" style="width: 100%; margin-top: 20px;">
+                <!-- Input de Arquivo -->
+                <input type="file" name="file" accept=".csv" class="form-control" required style="width: 100%; height: 50px; font-size: 16px;">
+    
+                <!-- Botão de Enviar -->
+                <button type="submit" class="btn btn-primary" style="height: 50px; width: 15%; font-size: 16px; margin-left: 10px;">
+                    Enviar
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    
 
     {% if error %}
         <div class="alert alert-danger mt-3">{{ error }}</div>
     {% endif %}
-</div>
 </body>
 </html>
