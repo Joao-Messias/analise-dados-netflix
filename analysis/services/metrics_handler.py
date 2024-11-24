@@ -5,6 +5,9 @@ matplotlib.use('Agg')  # Força o uso de um backend sem GUI
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
+import numpy as np
+import calendar
+
 
 class MetricsHandler:
     @staticmethod
@@ -188,4 +191,60 @@ class MetricsHandler:
             return image_base64
         except Exception as e:
             raise ValueError(f"Erro ao gerar o gráfico de tempo gasto por título: {e}")
+        
+
+    @staticmethod
+    def generate_monthly_activity_chart(data):
+        """
+        Gera um gráfico de barras com a frequência média de atividades por mês ao longo de todos os anos.
+        """
+        try:
+            # Verifica se a coluna de datas está presente
+            if 'Start_Time' not in data.columns:
+                raise ValueError("A coluna 'Start_Time' não foi encontrada na base de dados.")
+
+            # Converte a coluna 'Start_Time' para datetime
+            data['Start_Time'] = pd.to_datetime(data['Start_Time'])
+
+            # Extrai o mês e o ano da coluna 'Start_Time'
+            data['Month'] = data['Start_Time'].dt.month
+            data['Year'] = data['Start_Time'].dt.year
+
+            # Agrupa os dados por mês e ano e conta as atividades para cada combinação
+            monthly_activity = data.groupby(['Year', 'Month']).size().reset_index(name='Frequency')
+
+            # Somar a frequência de atividades por mês, considerando todos os anos
+            monthly_sum = monthly_activity.groupby('Month')['Frequency'].sum().reset_index()
+
+            # Calcular a quantidade total de anos presentes
+            total_years = len(data['Year'].unique())
+
+            # Calcular a média de atividades por mês ao longo de todos os anos
+            monthly_sum['Average_Frequency'] = monthly_sum['Frequency'] / total_years
+
+            # Garante que todos os meses (jan-dez) estejam presentes, mesmo que não haja dados para algum mês
+            all_months = pd.Series(range(1, 13), name='Month')  # Meses de 1 a 12
+            monthly_sum = pd.merge(all_months, monthly_sum, on='Month', how='left').fillna(0)
+
+            # Gera o gráfico com tamanho maior (largura = 16, altura = 8)
+            plt.figure(figsize=(16, 8))  
+            plt.bar(monthly_sum['Month'].astype(str), monthly_sum['Average_Frequency'], color='teal')
+            plt.xlabel('Mês', fontsize=12)
+            plt.ylabel('Frequência Média de Atividades', fontsize=12)
+            plt.title('Frequência Média de Atividades por Mês ao Longo dos Anos', fontsize=14)
+            plt.xticks(rotation=45, ha='right', fontsize=10)
+            plt.tight_layout()
+
+            # Salva o gráfico como imagem Base64
+            buffer = BytesIO()
+            plt.savefig(buffer, format='png')
+            buffer.seek(0)
+            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            buffer.close()
+            return image_base64
+        except Exception as e:
+            raise ValueError(f"Erro ao gerar o gráfico de atividades mensais: {e}")
+
+
+
 

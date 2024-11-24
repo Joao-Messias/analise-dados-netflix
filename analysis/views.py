@@ -59,6 +59,8 @@ def analysis_dashboard(request):
     top_5_titles = MetricsHandler.top_5_titles_by_duration(df)
     # Gráfico de tempo gasto por título
     time_spent_chart = MetricsHandler.generate_time_spent_by_title_chart(df)
+    monthly_activity_chart = MetricsHandler.generate_monthly_activity_chart(df)
+
 
 
     # Gera o gráfico de comparação filmes vs séries
@@ -74,6 +76,8 @@ def analysis_dashboard(request):
         'top_5_titles': top_5_titles.to_dict(orient='records'),
         'movie_vs_series_chart': movie_vs_series_chart,  # Gráfico em Base64
         'graph_time_spent_chart': time_spent_chart,
+        'monthly_activity_chart': monthly_activity_chart,  # Gráfico de frequência mensal
+
 
     }
 
