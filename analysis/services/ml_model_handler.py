@@ -123,3 +123,75 @@ class MLModelHandler:
         plt.close()
 
         return graphs
+
+    @staticmethod
+    def predict_watch_time_by_profile(data, model):
+        """
+        Gera predições de duração para cada perfil com base no modelo.
+        """
+        # Criar cópias separadas para 'movie' e 'tv series'
+        movie_data = data.copy()
+        movie_data['type'] = 'movie'
+
+        series_data = data.copy()
+        series_data['type'] = 'tv series'
+
+        # One-hot encode para filmes e séries
+        movie_encoded = pd.get_dummies(movie_data, columns=['type', 'Profile_Name'])
+        series_encoded = pd.get_dummies(series_data, columns=['type', 'Profile_Name'])
+
+        # Ajustar colunas para garantir que ambos tenham as mesmas features do modelo
+        required_columns = model.feature_names_in_
+        movie_encoded = movie_encoded.reindex(columns=required_columns, fill_value=0)
+        series_encoded = series_encoded.reindex(columns=required_columns, fill_value=0)
+
+        # Predizer a duração para filmes e séries
+        movie_predictions = model.predict(movie_encoded)
+        series_predictions = model.predict(series_encoded)
+
+        # Consolidar os resultados por perfil
+        predictions = pd.DataFrame({
+            'Profile_Name': data['Profile_Name'],
+            'Predicted_Movie_Hours': movie_predictions,
+            'Predicted_Series_Hours': series_predictions,
+        })
+
+        # Agrupar por perfil para prever o total esperado
+        predictions = predictions.groupby('Profile_Name').mean().reset_index()
+        return predictions
+
+    @staticmethod
+    def generate_profile_prediction_chart(predictions):
+        """
+        Gera um gráfico de barras para exibir as predições de horas assistidas por perfil.
+        """
+        plt.figure(figsize=(12, 8))
+
+        # Ordenar por perfil para consistência
+        predictions = predictions.sort_values(by='Profile_Name')
+
+        # Configurar o gráfico
+        bar_width = 0.35
+        profiles = predictions['Profile_Name']
+        x = np.arange(len(profiles))
+
+        plt.bar(x - bar_width / 2, predictions['Predicted_Movie_Hours'], bar_width, label='Filmes', color='blue')
+        plt.bar(x + bar_width / 2, predictions['Predicted_Series_Hours'], bar_width, label='Séries', color='orange')
+
+        # Configurações dos eixos
+        plt.xlabel('Perfil', fontsize=12)
+        plt.ylabel('Horas Previstas', fontsize=12)
+        plt.title('Predição de Horas de Visualização por Perfil', fontsize=14)
+        plt.xticks(x, profiles, rotation=45, ha='right', fontsize=10)
+        plt.legend(title='Tipo de Conteúdo', fontsize=10)
+        plt.tight_layout()
+
+        # Converter o gráfico em base64
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        chart_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        buffer.close()
+        plt.close()
+
+        return chart_base64

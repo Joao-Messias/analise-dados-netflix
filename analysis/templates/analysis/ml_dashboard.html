@@ -30,47 +30,9 @@
 
 <h2 class="text-center">Resultados do Modelo</h2>
 
-{% if mse %}
-<p><strong>MSE (Erro Médio Quadrático):</strong> {{ mse }}</p>
-{% endif %}
-
-<p><strong>Métricas por Tipo de Conteúdo:</strong></p>
-<ul>
-    <li><strong>Séries:</strong>
-        <ul>
-            <li><strong>Média:</strong> {{ average_duration_series }} horas</li>
-            <li><strong>Mediana:</strong> {{ median_duration_series }} horas</li>
-        </ul>
-    </li>
-    <li><strong>Filmes:</strong>
-        <ul>
-            <li><strong>Média:</strong> {{ average_duration_movies }} horas</li>
-            <li><strong>Mediana:</strong> {{ median_duration_movies }} horas</li>
-        </ul>
-    </li>
-</ul>
-
-<p><strong>Contagem de Sessões:</strong></p>
-<ul>
-    <li><strong>Séries:</strong> {{ session_counts.tv_series }}</li>
-    <li><strong>Filmes:</strong> {{ session_counts.movie }}</li>
-</ul>
-
-
-<h3 class="text-center">Gráficos de Análise</h3>
-
-<!-- Boxplot -->
-{% if boxplot_duration %}
+{% if profile_chart %}
 <div class="card mt-4">
-    <h4 class="card-title text-center">Boxplot: Duração por Tipo de Conteúdo</h4>
-    <img src="data:image/png;base64,{{ boxplot_duration }}" alt="Boxplot de Duração" class="img-fluid">
-</div>
-{% endif %}
-
-<!-- Histograma -->
-{% if histogram_duration %}
-<div class="card mt-4">
-    <h4 class="card-title text-center">Histograma: Distribuição da Duração</h4>
-    <img src="data:image/png;base64,{{ histogram_duration }}" alt="Histograma de Duração" class="img-fluid">
+    <h4 class="card-title text-center">Predição de Horas por Perfil</h4>
+    <img src="data:image/png;base64,{{ profile_chart }}" alt="Gráfico de Predição por Perfil" class="img-fluid">
 </div>
 {% endif %}
