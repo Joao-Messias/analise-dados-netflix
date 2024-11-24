@@ -84,6 +84,41 @@ class MetricsHandler:
             raise ValueError("As colunas necessárias ('Title', 'Duration') não foram encontradas.")
 
     @staticmethod
+    def plot_average_usage_by_weekday(data):
+        """
+        Gera um gráfico de barras com o tempo médio de uso em horas por dia da semana.
+        """
+        if 'Duration' in data.columns and 'Day_of_Week' in data.columns:
+            try:
+                # Converte a coluna "Duration" para timedelta, caso ainda não tenha sido feita
+                data['Duration'] = pd.to_timedelta(data['Duration'], errors='coerce')
+                
+                # Calcula a soma total de horas e o número de sessões por dia da semana
+                grouped = data.groupby('Day_of_Week')['Duration'].agg(['sum', 'count']).reset_index()
+                
+                # Calcula a média de horas por dia da semana
+                grouped['Average_Hours'] = grouped['sum'].dt.total_seconds() / 3600 / grouped['count']
+                grouped['Average_Hours'] = grouped['Average_Hours'].round(2)
+                
+                # Ordena os dias da semana na ordem correta
+                days_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                grouped = grouped.set_index('Day_of_Week').reindex(days_order).reset_index()
+
+                # Gráfico
+                plt.figure(figsize=(10, 6))
+                plt.bar(grouped['Day_of_Week'], grouped['Average_Hours'], color='skyblue')
+                plt.xlabel('Dia da Semana')
+                plt.ylabel('Tempo Médio de Uso (Horas)')
+                plt.title('Tempo Médio de Uso por Dia da Semana')
+                plt.xticks(rotation=45)
+                plt.tight_layout()
+                plt.show()
+            except Exception as e:
+                raise ValueError(f"Erro ao gerar o gráfico de tempo médio por dia da semana: {e}")
+        else:
+            raise ValueError("As colunas necessárias ('Duration', 'Day_of_Week') não foram encontradas.")
+
+    @staticmethod
     def movie_vs_series_count(data):
         """
         Retorna a contagem de filmes e séries assistidos por perfil.

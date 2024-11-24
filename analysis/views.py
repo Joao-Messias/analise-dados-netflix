@@ -1,13 +1,15 @@
 import json
+import io
+import base64
+import matplotlib.pyplot as plt
+import pandas as pd
+import logging
 
 from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 from netflix import settings
 from .services.file_handler import FileHandler
 from .services.data_cleaner import DataCleaner
-import logging
-import pandas as pd
-
 from .services.metrics_handler import MetricsHandler
 
 logger = logging.getLogger(__name__)
@@ -52,34 +54,59 @@ def analysis_dashboard(request):
     # Converte o JSON de volta para um DataFrame
     df = pd.read_json(uploaded_data)
 
+    # Garantir que a coluna "Day_of_Week" exista
+    if 'Start_Time' in df.columns:
+        df['Start_Time'] = pd.to_datetime(df['Start_Time'], errors='coerce')
+        df['Day_of_Week'] = df['Start_Time'].dt.day_name()
+
     # Calcula as métricas
     total_sessions = MetricsHandler.total_sessions(df)
     total_time = MetricsHandler.total_time_consumed(df)
     ranking_by_hours = MetricsHandler.activity_ranking_by_hours(df).head(5)  # Top 5
     top_5_titles = MetricsHandler.top_5_titles_by_duration(df)
-    # Gráfico de tempo gasto por título
+
+    # Gera o gráfico de tempo médio por dia da semana
+    buffer = io.BytesIO()
+    try:
+        # Calcular o tempo médio por dia da semana
+        grouped = df.groupby('Day_of_Week')['Duration'].apply(
+            lambda x: pd.to_timedelta(x).sum().total_seconds() / 3600 / len(x)
+        ).reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+        
+        # Criar o gráfico
+        plt.figure(figsize=(10, 6))
+        plt.bar(grouped.index, grouped.values, color='skyblue')
+        plt.xlabel('Dia da Semana')
+        plt.ylabel('Tempo Médio de Uso (Horas)')
+        plt.title('Tempo Médio de Uso por Dia da Semana')
+        plt.tight_layout()
+
+        # Salvar o gráfico como imagem em base64
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+        average_usage_chart = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        buffer.close()
+        plt.close()
+    except Exception as e:
+        logger.error(f"Erro ao gerar o gráfico: {e}")
+        average_usage_chart = None
+
+    # Gera gráficos adicionais
     time_spent_chart = MetricsHandler.generate_time_spent_by_title_chart(df)
     monthly_activity_chart = MetricsHandler.generate_monthly_activity_chart(df)
-
-
-
-    # Gera o gráfico de comparação filmes vs séries
     movie_vs_series_chart = MetricsHandler.generate_movie_vs_series_chart(df)
 
-
-    # Faz análises ou processa os dados para gráficos
+    # Passa os dados e o gráfico para o contexto
     context = {
         'data_summary': df.describe().to_html(classes="table table-striped"),
         'total_sessions': total_sessions,
         'total_time': total_time,
-        'ranking_by_hours': ranking_by_hours.to_dict(orient='records'),  # Passar como lista de dicionários
+        'ranking_by_hours': ranking_by_hours.to_dict(orient='records'),
         'top_5_titles': top_5_titles.to_dict(orient='records'),
-        'movie_vs_series_chart': movie_vs_series_chart,  # Gráfico em Base64
+        'movie_vs_series_chart': movie_vs_series_chart,
         'graph_time_spent_chart': time_spent_chart,
-        'monthly_activity_chart': monthly_activity_chart,  # Gráfico de frequência mensal
-
-
+        'monthly_activity_chart': monthly_activity_chart,
+        'average_usage_chart': average_usage_chart,  # Adiciona o gráfico ao contexto
     }
-
 
     return render(request, 'analysis/dashboard.html', context)
