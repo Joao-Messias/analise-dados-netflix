@@ -146,3 +146,46 @@ class MetricsHandler:
             return image_base64
         except Exception as e:
             raise ValueError(f"Erro ao gerar o gráfico de comparação filmes vs séries: {e}")
+        
+
+    @staticmethod
+    def generate_time_spent_by_title_chart(data, profile_name=None):
+        """
+        Gera um gráfico de barras com o tempo gasto por título, somando temporadas e permitindo filtro por perfil.
+        """
+        try:
+            # Converte a duração para timedelta
+            data['Duration'] = pd.to_timedelta(data['Duration'])
+
+            # Filtrar por perfil, se fornecido
+            if profile_name:
+                data = data[data['Profile_Name'] == profile_name]
+
+            # Criar a coluna base do título (remover temporadas)
+            data['Base_Title'] = data['Title'].apply(lambda x: x.split(':')[0] if ':' in x else x)
+
+            # Agrupar pelo título base e somar as durações
+            time_spent = data.groupby('Base_Title')['Duration'].sum().reset_index()
+            time_spent['Total_Hours'] = time_spent['Duration'].dt.total_seconds() / 3600
+
+            # Ordenar pelos mais assistidos e limitar a 10
+            time_spent = time_spent.sort_values(by='Total_Hours', ascending=False).head(10)
+
+            # Gerar o gráfico
+            plt.figure(figsize=(12, 6))
+            plt.bar(time_spent['Base_Title'], time_spent['Total_Hours'], color='skyblue', edgecolor='black')
+            plt.xlabel('Títulos', fontsize=12)
+            plt.ylabel('Horas Assistidas', fontsize=12)
+            plt.xticks(rotation=45, ha='right', fontsize=10)
+            plt.tight_layout()
+
+            # Converter o gráfico em imagem Base64
+            buffer = BytesIO()
+            plt.savefig(buffer, format='png')
+            buffer.seek(0)
+            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            buffer.close()
+            return image_base64
+        except Exception as e:
+            raise ValueError(f"Erro ao gerar o gráfico de tempo gasto por título: {e}")
+
