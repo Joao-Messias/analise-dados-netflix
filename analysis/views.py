@@ -11,6 +11,7 @@ from netflix import settings
 from .services.file_handler import FileHandler
 from .services.data_cleaner import DataCleaner
 from .services.metrics_handler import MetricsHandler
+from .services.ml_model_handler import MLModelHandler
 
 logger = logging.getLogger(__name__)
 
@@ -131,3 +132,64 @@ def analysis_dashboard(request):
 
     return render(request, 'analysis/dashboard.html', context)
 
+def ml_analysis(request):
+    uploaded_data = request.session.get('uploaded_data')
+    if not uploaded_data:
+        return redirect('analysis:upload_file')
+
+    # Carregar os dados preprocessados
+    df = pd.read_json(uploaded_data)
+    sessions = MetricsHandler.preprocess_sessions(df, max_gap_minutes=30)
+
+    context = {'columns': df.columns}
+
+    if request.method == 'POST':
+        # Recuperar as configurações do formulário
+        model_type = request.POST.get('model_type')
+        max_depth = request.POST.get('max_depth', None)
+        n_neighbors = request.POST.get('n_neighbors', None)
+
+        # Lista de modelos válidos
+        valid_models = ['linear_regression', 'random_forest', 'decision_tree', 'knn']
+
+        if model_type not in valid_models:
+            context['error'] = f"Modelo '{model_type}' não é válido. Escolha entre: {', '.join(valid_models)}"
+            return render(request, 'analysis/ml_dashboard.html', context)
+
+        # Parâmetros do modelo
+        params = {}
+        if model_type in ['random_forest', 'decision_tree'] and max_depth:
+            params['max_depth'] = int(max_depth)
+        if model_type == 'knn' and n_neighbors:
+            params['n_neighbors'] = int(n_neighbors)
+
+        try:
+            # Treinar o modelo
+            result = MLModelHandler.train_watch_duration_model(sessions, model_type=model_type, **params)
+
+            # Gerar gráficos com base no modelo treinado
+            predictions = result['predictions']
+            model = result['model']
+            mse = result['mse']
+
+            # Gera análise e gráficos baseados no modelo
+            analysis = MLModelHandler.analyze_model_performance(data=sessions, predictions=predictions, mse=mse)
+            analysis_graphs = MLModelHandler.generate_analysis_charts(sessions)
+
+            # Atualizar o contexto com os dados gerados
+            context.update({
+                'mse': analysis["mse"],
+                'average_duration_series': analysis["average_duration_by_type"].get("tv series", 0),
+                'average_duration_movies': analysis["average_duration_by_type"].get("movie", 0),
+                'median_duration_series': analysis["median_duration_by_type"].get("tv series", 0),
+                'median_duration_movies': analysis["median_duration_by_type"].get("movie", 0),
+                'session_counts': {
+                    key.replace(" ", "_"): value for key, value in analysis["session_counts_by_type"].items()
+                },
+                'boxplot_duration': analysis_graphs["boxplot_duration"],
+                'histogram_duration': analysis_graphs["histogram_duration"],
+            })
+        except Exception as e:
+            context['error'] = f"Ocorreu um erro ao treinar o modelo: {str(e)}"
+
+    return render(request, 'analysis/ml_dashboard.html', context)

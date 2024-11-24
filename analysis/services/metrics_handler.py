@@ -1,6 +1,9 @@
-import numpy as np
 import pandas as pd
 import matplotlib
+from django.shortcuts import redirect
+
+from analysis.services.ml_model_handler import MLModelHandler
+
 matplotlib.use('Agg')  # Força o uso de um backend sem GUI
 import matplotlib.pyplot as plt
 from io import BytesIO
@@ -346,5 +349,46 @@ class MetricsHandler:
             return image_base64
         except Exception as e:
             raise ValueError(f"Erro ao gerar o gráfico de atividade mensal por usuário: {e}")
+
+    @staticmethod
+    def preprocess_sessions(data, max_gap_minutes=30):
+            """
+            Prepara os dados para o modelo de Machine Learning, calculando sessões contínuas.
+
+            :param data: DataFrame com as colunas ['Profile_Name', 'Start_Time', 'Duration', 'type'].
+            :param max_gap_minutes: Intervalo máximo (em minutos) entre sessões para serem consideradas contínuas.
+            :return: DataFrame com dados preparados para análise.
+            """
+            try:
+                # Converter colunas para tipos apropriados
+                data['Start_Time'] = pd.to_datetime(data['Start_Time'])
+                data['Duration'] = pd.to_timedelta(data['Duration'])
+                data['End_Time'] = data['Start_Time'] + data['Duration']
+
+                # Ordenar por usuário e horário de início
+                data = data.sort_values(by=['Profile_Name', 'Start_Time'])
+
+                # Identificar novas sessões com base no intervalo de tempo
+                data['New_Session'] = (
+                        data.groupby('Profile_Name')['Start_Time']
+                        .diff()
+                        .fillna(pd.Timedelta(seconds=0)) > pd.Timedelta(minutes=max_gap_minutes)
+                ).astype(int).cumsum()
+
+                # Agrupar por perfil, tipo, e sessões contínuas
+                sessions = (
+                    data.groupby(['Profile_Name', 'type', 'New_Session'])
+                    .agg(
+                        Total_Hours=('Duration', lambda x: x.sum().total_seconds() / 3600),
+                        Start_Time=('Start_Time', 'min'),
+                        End_Time=('End_Time', 'max'),
+                        Day=('Start_Time', lambda x: x.dt.date.min())
+                    )
+                    .reset_index()
+                )
+                return sessions
+            except Exception as e:
+                raise ValueError(f"Erro ao preprocessar sessões: {e}")
+
 
 

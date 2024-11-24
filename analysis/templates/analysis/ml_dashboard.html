@@ -1,0 +1,76 @@
+<h2 class="text-center">Configurar Modelo de Machine Learning</h2>
+<form method="post">
+    {% csrf_token %}
+
+    <!-- Seleção do Modelo -->
+    <div class="form-group">
+        <label for="model_type">Escolha o Modelo</label>
+        <select class="form-control" id="model_type" name="model_type" required>
+            <option value="linear_regression">Regressão Linear</option>
+            <option value="random_forest">Random Forest</option>
+            <option value="decision_tree">Árvore de Decisão</option>
+            <option value="knn">K-Nearest Neighbors (KNN)</option>
+        </select>
+    </div>
+
+    <!-- Parâmetros Específicos -->
+    <div class="form-group">
+        <label for="max_depth">Profundidade Máxima (Random Forest / Decision Tree)</label>
+        <input type="number" class="form-control" id="max_depth" name="max_depth" placeholder="Ex.: 5">
+    </div>
+
+    <div class="form-group">
+        <label for="n_neighbors">Número de Vizinhos (KNN)</label>
+        <input type="number" class="form-control" id="n_neighbors" name="n_neighbors" placeholder="Ex.: 3">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Treinar Modelo</button>
+</form>
+
+
+<h2 class="text-center">Resultados do Modelo</h2>
+
+{% if mse %}
+<p><strong>MSE (Erro Médio Quadrático):</strong> {{ mse }}</p>
+{% endif %}
+
+<p><strong>Métricas por Tipo de Conteúdo:</strong></p>
+<ul>
+    <li><strong>Séries:</strong>
+        <ul>
+            <li><strong>Média:</strong> {{ average_duration_series }} horas</li>
+            <li><strong>Mediana:</strong> {{ median_duration_series }} horas</li>
+        </ul>
+    </li>
+    <li><strong>Filmes:</strong>
+        <ul>
+            <li><strong>Média:</strong> {{ average_duration_movies }} horas</li>
+            <li><strong>Mediana:</strong> {{ median_duration_movies }} horas</li>
+        </ul>
+    </li>
+</ul>
+
+<p><strong>Contagem de Sessões:</strong></p>
+<ul>
+    <li><strong>Séries:</strong> {{ session_counts.tv_series }}</li>
+    <li><strong>Filmes:</strong> {{ session_counts.movie }}</li>
+</ul>
+
+
+<h3 class="text-center">Gráficos de Análise</h3>
+
+<!-- Boxplot -->
+{% if boxplot_duration %}
+<div class="card mt-4">
+    <h4 class="card-title text-center">Boxplot: Duração por Tipo de Conteúdo</h4>
+    <img src="data:image/png;base64,{{ boxplot_duration }}" alt="Boxplot de Duração" class="img-fluid">
+</div>
+{% endif %}
+
+<!-- Histograma -->
+{% if histogram_duration %}
+<div class="card mt-4">
+    <h4 class="card-title text-center">Histograma: Distribuição da Duração</h4>
+    <img src="data:image/png;base64,{{ histogram_duration }}" alt="Histograma de Duração" class="img-fluid">
+</div>
+{% endif %}
