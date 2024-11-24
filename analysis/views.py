@@ -45,7 +45,7 @@ def upload_file(request):
 
 def analysis_dashboard(request):
     """
-    Página de dashboard com análises gráficas.
+    Página de dashboard com análises gráficas filtradas.
     """
     uploaded_data = request.session.get('uploaded_data')
     if not uploaded_data:
@@ -54,10 +54,24 @@ def analysis_dashboard(request):
     # Converte o JSON de volta para um DataFrame
     df = pd.read_json(uploaded_data)
 
-    # Garantir que a coluna "Day_of_Week" exista
+    # Gera a lista completa de usuários e anos antes de aplicar os filtros
+    user_list = df['Profile_Name'].unique() if 'Profile_Name' in df.columns else []
     if 'Start_Time' in df.columns:
         df['Start_Time'] = pd.to_datetime(df['Start_Time'], errors='coerce')
-        df['Day_of_Week'] = df['Start_Time'].dt.day_name()
+        df['Year'] = df['Start_Time'].dt.year  # Adiciona a coluna para o ano
+    year_list = df['Year'].unique() if 'Year' in df.columns else []
+
+    # Recebe os filtros do request
+    selected_user = request.GET.get('user')  # Filtro de usuário
+    selected_year = request.GET.get('year')  # Filtro de ano
+
+    # Aplica o filtro de usuário, se fornecido
+    if selected_user and 'Profile_Name' in df.columns:
+        df = df[df['Profile_Name'] == selected_user]
+
+    # Aplica o filtro de ano, se fornecido
+    if selected_year:
+        df = df[df['Year'] == int(selected_year)]
 
     # Calcula as métricas
     total_sessions = MetricsHandler.total_sessions(df)
@@ -72,7 +86,7 @@ def analysis_dashboard(request):
         grouped = df.groupby('Day_of_Week')['Duration'].apply(
             lambda x: pd.to_timedelta(x).sum().total_seconds() / 3600 / len(x)
         ).reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
-        
+
         # Criar o gráfico
         plt.figure(figsize=(10, 6))
         plt.bar(grouped.index, grouped.values, color='skyblue')
@@ -97,7 +111,7 @@ def analysis_dashboard(request):
     movie_vs_series_chart = MetricsHandler.generate_movie_vs_series_chart(df)
     monthly_activity_user_chart = MetricsHandler.generate_monthly_activity_per_user_chart(df)
 
-    # Passa os dados e o gráfico para o contexto
+    # Passa os dados e os gráficos para o contexto
     context = {
         'data_summary': df.describe().to_html(classes="table table-striped"),
         'total_sessions': total_sessions,
@@ -109,6 +123,11 @@ def analysis_dashboard(request):
         'monthly_activity_chart': monthly_activity_chart,
         'average_usage_chart': average_usage_chart,
         'monthly_activity_user_chart': monthly_activity_user_chart,
+        'user_list': user_list,  # Lista de usuários para o filtro
+        'year_list': year_list,  # Lista de anos para o filtro
+        'selected_user': selected_user,  # Usuário selecionado
+        'selected_year': selected_year,  # Ano selecionado
     }
 
     return render(request, 'analysis/dashboard.html', context)
+

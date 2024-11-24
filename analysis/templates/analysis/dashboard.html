@@ -56,6 +56,39 @@
     <div class="container mt-5">
         <h1 class="text-center">Dashboard de Análise</h1>
         <p class="text-center">Veja abaixo as métricas e gráficos gerados a partir dos dados enviados.</p>
+        <div class="container mt-3">
+            <form method="get" class="form-inline">
+                <!-- Filtro por Usuário -->
+                <div class="form-group mx-sm-3">
+                    <label for="user" class="sr-only">Usuário</label>
+                    <select name="user" id="user" class="form-control">
+                        <option value="">Todos os Usuários</option>
+                        {% for user in user_list %}
+                            <option value="{{ user }}" {% if user == selected_user %}selected{% endif %}>
+                                {{ user }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+        
+                <!-- Filtro por Ano -->
+                <div class="form-group mx-sm-3">
+                    <label for="year" class="sr-only">Ano</label>
+                    <select name="year" id="year" class="form-control">
+                        <option value="">Todos os Anos</option>
+                        {% for year in year_list %}
+                            <option value="{{ year }}" {% if year|stringformat:"s" == selected_year %}selected{% endif %}>
+                                {{ year }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+        
+                <!-- Botão de Enviar -->
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
+        </div>
+        
 
         <!-- Grade de Métricas -->
         <div class="row">
@@ -133,14 +166,15 @@
                     <div class="card-body">
                         <h3 class="card-title text-center">Tempo Médio de Uso por Dia da Semana</h3>
                         {% if average_usage_chart %}
-                            <img src="data:image/png;base64,{{ average_usage_chart }}" alt="Gráfico de Tempo Médio por Dia da Semana" class="img-fluid">
+                        <img src="data:image/png;base64,{{ average_usage_chart }}"
+                            alt="Gráfico de Tempo Médio por Dia da Semana" class="img-fluid">
                         {% else %}
-                            <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
+                        <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            
+
 
             <!-- Frequência Assistida por Mês -->
             <div class="col-md-6">
@@ -170,20 +204,21 @@
                 </div>
             </div>
         </div>
-       <div class="row">
-    <div class="col-md-12">
-        <div class="card mt-4">
-            <div class="card-body">
-                          <h3 class="card-title text-center">Atividade Mensal</h3>
-            {% if monthly_activity_chart %}
-                <img src="data:image/png;base64,{{ monthly_activity_user_chart }}" alt="Gráfico de Atividade Mensal" class="img-fluid">
-            {% else %}
-                <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
-            {% endif %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h3 class="card-title text-center">Atividade Mensal</h3>
+                        {% if monthly_activity_chart %}
+                        <img src="data:image/png;base64,{{ monthly_activity_user_chart }}"
+                            alt="Gráfico de Atividade Mensal" class="img-fluid">
+                        {% else %}
+                        <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
