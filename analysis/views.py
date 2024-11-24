@@ -1,10 +1,8 @@
-import json
 import io
 import base64
 import matplotlib.pyplot as plt
 import pandas as pd
 import logging
-
 from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 from netflix import settings
@@ -88,12 +86,13 @@ def analysis_dashboard(request):
         ).reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
 
         # Criar o gráfico
-        plt.figure(figsize=(10, 6))
-        plt.bar(grouped.index, grouped.values, color='skyblue')
-        plt.xlabel('Dia da Semana')
-        plt.ylabel('Tempo Médio de Uso (Horas)')
-        plt.title('Tempo Médio de Uso por Dia da Semana')
+        plt.figure(figsize=(12, 6))
+        plt.bar(grouped.index, grouped.values, color= 'skyblue')
+        plt.xlabel('Dia da Semana', fontsize=14)
+        plt.ylabel('Tempo Médio de Uso (Horas)', fontsize=14)
+        plt.xticks(rotation=45, ha='right', fontsize=12)
         plt.tight_layout()
+        
 
         # Salvar o gráfico como imagem em base64
         plt.savefig(buffer, format='png')
@@ -123,10 +122,10 @@ def analysis_dashboard(request):
         'monthly_activity_chart': monthly_activity_chart,
         'average_usage_chart': average_usage_chart,
         'monthly_activity_user_chart': monthly_activity_user_chart,
-        'user_list': user_list,  # Lista de usuários para o filtro
-        'year_list': year_list,  # Lista de anos para o filtro
-        'selected_user': selected_user,  # Usuário selecionado
-        'selected_year': selected_year,  # Ano selecionado
+        'user_list': user_list,  
+        'year_list': year_list,  
+        'selected_user': selected_user,  
+        'selected_year': selected_year,  
     }
 
     return render(request, 'analysis/dashboard.html', context)

@@ -105,12 +105,10 @@ class MetricsHandler:
                 grouped = grouped.set_index('Day_of_Week').reindex(days_order).reset_index()
 
                 # Gráfico
-                plt.figure(figsize=(10, 6))
-                plt.bar(grouped['Day_of_Week'], grouped['Average_Hours'], color='skyblue')
+                plt.figure(figsize=(16, 9))
+                plt.bar(grouped['Day_of_Week'], grouped['Average_Hours'], color='red', edgecolor='red')
                 plt.xlabel('Dia da Semana')
-                plt.ylabel('Tempo Médio de Uso (Horas)')
-                plt.title('Tempo Médio de Uso por Dia da Semana')
-                plt.xticks(rotation=45)
+                plt.xticks(rotation=45, ha='right', fontsize=12)
                 plt.tight_layout()
                 plt.show()
             except Exception as e:
@@ -168,11 +166,9 @@ class MetricsHandler:
             plt.bar(x + bar_width / 2, count_data['tv series'], width=bar_width, label='Séries', color='orange')
 
             # Configuração dos eixos e rótulos
-            plt.xlabel('Perfis', fontsize=12)
-            plt.ylabel('Quantidade Assistida', fontsize=12)
-            plt.title('Comparação: Filmes vs Séries por Perfil', fontsize=14)
-            plt.xticks(x, profiles, rotation=45, ha='right', fontsize=10)
-            plt.legend(title='Tipo', fontsize=10)
+            plt.xlabel('Perfis', fontsize=14)
+            plt.ylabel('Quantidade Assistida', fontsize=14)
+            plt.xticks(x, profiles, rotation=45, ha='right', fontsize=12)
             plt.tight_layout()
 
             # Salvar o gráfico como uma imagem base64 para exibir no HTML
@@ -210,11 +206,11 @@ class MetricsHandler:
             time_spent = time_spent.sort_values(by='Total_Hours', ascending=False).head(10)
 
             # Gerar o gráfico
-            plt.figure(figsize=(12, 6))
+            plt.figure(figsize=(12, 6 ))
             plt.bar(time_spent['Base_Title'], time_spent['Total_Hours'], color='skyblue', edgecolor='black')
-            plt.xlabel('Títulos', fontsize=12)
-            plt.ylabel('Horas Assistidas', fontsize=12)
-            plt.xticks(rotation=45, ha='right', fontsize=10)
+            plt.xlabel('Títulos', fontsize=14)
+            plt.ylabel('Horas Assistidas', fontsize=14)
+            plt.xticks(rotation=45, ha='right', fontsize=12)
             plt.tight_layout()
 
             # Converter o gráfico em imagem Base64
@@ -262,12 +258,11 @@ class MetricsHandler:
             monthly_sum = pd.merge(all_months, monthly_sum, on='Month', how='left').fillna(0)
 
             # Gera o gráfico com tamanho maior (largura = 16, altura = 8)
-            plt.figure(figsize=(16, 8))  
+            plt.figure(figsize=(12, 6))  
             plt.bar(monthly_sum['Month'].astype(str), monthly_sum['Average_Frequency'], color='teal')
-            plt.xlabel('Mês', fontsize=12)
-            plt.ylabel('Frequência Média de Atividades', fontsize=12)
-            plt.title('Frequência Média de Atividades por Mês ao Longo dos Anos', fontsize=14)
-            plt.xticks(rotation=45, ha='right', fontsize=10)
+            plt.xlabel('Mês', fontsize=14)
+            plt.ylabel('Frequência Média de Atividades', fontsize=15)
+            plt.xticks(rotation=45, ha='right', fontsize=12)
             plt.tight_layout()
 
             # Salva o gráfico como imagem Base64
@@ -310,7 +305,7 @@ class MetricsHandler:
             activity_percentage = activity.div(activity.sum(axis=1), axis=0) * 100
 
             # Gera o gráfico de barras empilhadas
-            fig, ax = plt.subplots(figsize=(12, 6))
+            fig, ax = plt.subplots(figsize=(18, 5))
             activity.plot(kind='bar', stacked=True, colormap='tab20', ax=ax)
 
             # Adiciona as porcentagens dentro das barras
@@ -330,9 +325,8 @@ class MetricsHandler:
                         bottom += activity.loc[month, user]
 
             # Configuração dos eixos e título
-            ax.set_xlabel('Meses', fontsize=12)
-            ax.set_ylabel('Atividade', fontsize=12)
-            ax.set_title('Atividade Mensal por Usuário (com Porcentagens)', fontsize=14)
+            ax.set_xlabel('Meses', fontsize=14)
+            ax.set_ylabel('Atividade', fontsize=14)
             ax.legend(title='Usuários', bbox_to_anchor=(1.05, 1), loc='upper left')
             plt.xticks(rotation=45)
             plt.tight_layout()
