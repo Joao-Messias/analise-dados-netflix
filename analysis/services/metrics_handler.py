@@ -280,6 +280,71 @@ class MetricsHandler:
         except Exception as e:
             raise ValueError(f"Erro ao gerar o gráfico de atividades mensais: {e}")
 
+    @staticmethod
+    def generate_monthly_activity_per_user_chart(data):
+        """
+        Gera um gráfico de barras empilhadas para exibir a atividade mensal por usuário.
+        """
+        try:
+            # Verifica se as colunas necessárias estão presentes
+            if 'Start_Time' not in data.columns or 'Profile_Name' not in data.columns:
+                raise ValueError("As colunas 'Start_Time' e 'Profile_Name' são necessárias.")
 
+            # Converte a coluna 'Start_Time' para datetime
+            data['Start_Time'] = pd.to_datetime(data['Start_Time'], errors='coerce')
+
+            # Extrai o número do mês (1-12)
+            data['Month'] = data['Start_Time'].dt.month
+
+            # Conta atividades por usuário e mês
+            activity = data.groupby(['Month', 'Profile_Name']).size().unstack(fill_value=0)
+
+            # Reindexar para garantir que todos os meses estejam presentes no eixo X
+            activity = activity.reindex(index=range(1, 13), fill_value=0)
+
+            # Substituir os números do mês por seus nomes em português
+            month_labels = [calendar.month_name[i].capitalize() for i in range(1, 13)]
+            activity.index = month_labels
+
+            # Calcular as porcentagens
+            activity_percentage = activity.div(activity.sum(axis=1), axis=0) * 100
+
+            # Gera o gráfico de barras empilhadas
+            fig, ax = plt.subplots(figsize=(12, 6))
+            activity.plot(kind='bar', stacked=True, colormap='tab20', ax=ax)
+
+            # Adiciona as porcentagens dentro das barras
+            for i, (month, row) in enumerate(activity_percentage.iterrows()):
+                bottom = 0  # Controle da posição inferior da barra
+                for user, value in row.items():
+                    if value > 0:  # Apenas adiciona rótulos para valores > 0
+                        ax.text(
+                            x=i,
+                            y=bottom + (activity.loc[month, user] / 2),
+                            s=f"{value:.1f}%",
+                            ha='center',
+                            va='center',
+                            fontsize=9,
+                            color='white' if value > 10 else 'black'
+                        )
+                        bottom += activity.loc[month, user]
+
+            # Configuração dos eixos e título
+            ax.set_xlabel('Meses', fontsize=12)
+            ax.set_ylabel('Atividade', fontsize=12)
+            ax.set_title('Atividade Mensal por Usuário (com Porcentagens)', fontsize=14)
+            ax.legend(title='Usuários', bbox_to_anchor=(1.05, 1), loc='upper left')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+
+            # Salva o gráfico como imagem Base64
+            buffer = BytesIO()
+            plt.savefig(buffer, format='png')
+            buffer.seek(0)
+            image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            buffer.close()
+            return image_base64
+        except Exception as e:
+            raise ValueError(f"Erro ao gerar o gráfico de atividade mensal por usuário: {e}")
 
 

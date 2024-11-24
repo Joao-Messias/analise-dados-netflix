@@ -170,15 +170,20 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <!-- Atividade Mensal por Usuário -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="metric-title">Atividade Mensal por Usuário</div>
-                    <div class="metric-value">A Implementar</div>
-                </div>
+       <div class="row">
+    <div class="col-md-12">
+        <div class="card mt-4">
+            <div class="card-body">
+                          <h3 class="card-title text-center">Atividade Mensal</h3>
+            {% if monthly_activity_chart %}
+                <img src="data:image/png;base64,{{ monthly_activity_user_chart }}" alt="Gráfico de Atividade Mensal" class="img-fluid">
+            {% else %}
+                <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
+            {% endif %}
             </div>
         </div>
+    </div>
+</div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

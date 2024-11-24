@@ -95,6 +95,7 @@ def analysis_dashboard(request):
     time_spent_chart = MetricsHandler.generate_time_spent_by_title_chart(df)
     monthly_activity_chart = MetricsHandler.generate_monthly_activity_chart(df)
     movie_vs_series_chart = MetricsHandler.generate_movie_vs_series_chart(df)
+    monthly_activity_user_chart = MetricsHandler.generate_monthly_activity_per_user_chart(df)
 
     # Passa os dados e o gráfico para o contexto
     context = {
@@ -106,7 +107,8 @@ def analysis_dashboard(request):
         'movie_vs_series_chart': movie_vs_series_chart,
         'graph_time_spent_chart': time_spent_chart,
         'monthly_activity_chart': monthly_activity_chart,
-        'average_usage_chart': average_usage_chart,  # Adiciona o gráfico ao contexto
+        'average_usage_chart': average_usage_chart,
+        'monthly_activity_user_chart': monthly_activity_user_chart,
     }
 
     return render(request, 'analysis/dashboard.html', context)
