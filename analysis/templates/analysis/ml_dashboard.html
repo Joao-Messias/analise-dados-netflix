@@ -83,8 +83,8 @@
         <div class="form-group mb-4">
             <label for="model_type" class="metric-title">Escolha o Modelo</label>
             <select class="form-control" id="model_type" name="model_type" required>
-                <option value="random_forest">Random Forest</option>
-                <option value="logistic_regression">Regressão Logística</option>
+                <option value="random_forest" {% if model_type == 'random_forest' %}selected{% endif %}>Random Forest</option>
+                <option value="logistic_regression" {% if model_type == 'logistic_regression' %}selected{% endif %}>Regressão Logística</option>
             </select>
         </div>
 
@@ -92,9 +92,39 @@
         <div id="random_forest_params">
             <div class="form-group mb-3">
                 <label for="n_estimators" class="metric-title">Número de Árvores (Random Forest)</label>
-                <input type="number" class="form-control" id="n_estimators" name="n_estimators" value="100" min="1">
+                <input type="number" class="form-control" id="n_estimators" name="n_estimators" 
+                value="{{ n_estimators }}" min="1">
+                     </div>
+            <div class="form-group mb-3">
+                <label for="max_depth" class="metric-title">Profundidade Máxima (Random Forest)</label>
+                <input type="number" class="form-control" id="max_depth" name="max_depth" 
+                value="{{ max_depth }}" min="1" placeholder="Sem limite">
+                     </div>
+        </div>
+
+        <div id="logistic_regression_params">
+            <div class="form-group mb-3">
+                <label for="penalty" class="metric-title">Penalidade (Regressão Logística)</label>
+                <select class="form-control" id="penalty" name="penalty" required>
+                    <option value="l2" {% if penalty == 'l2' %}selected{% endif %}>L2</option>
+                    <option value="l1" {% if penalty == 'l1' %}selected{% endif %}>L1</option>
+                    <option value="elasticnet" {% if penalty == 'elasticnet' %}selected{% endif %}>ElasticNet</option>
+                    <option value="none" {% if penalty == 'none' %}selected{% endif %}>Nenhuma</option>
+                </select>
+            </div>
+            <div class="form-group mb-3">
+                <label for="regularization_c" class="metric-title">Inverso da Regularização (C)</label>
+                <input type="number" class="form-control" id="regularization_c" name="regularization_c" 
+                       value="{{ regularization_c }}" min="0.01" step="0.01">
+            </div>
+            <div class="form-group mb-3">
+                <label for="l1_ratio" class="metric-title">L1 Ratio (ElasticNet)</label>
+                <input type="number" class="form-control" id="l1_ratio" name="l1_ratio" 
+                       value="{{ l1_ratio }}" min="0" max="1" step="0.1" placeholder="Somente para ElasticNet">
             </div>
         </div>
+        
+        
 
         <button type="submit" class="btn btn-primary w-100">Treinar Modelo</button>
     </form>
@@ -105,11 +135,11 @@
 
         <!-- Métricas -->
         {% if metrics %}
-        <div class="card p-4 mt-4">
+        <div class="card text-white p-4 mt-4">
             <h3 class="metric-title">Métricas do Modelo</h3>
-            <table class="table table-striped mt-3">
+            <table class="table text-white mt-3">
                 <thead>
-                    <tr>
+                    <tr class="text-left">
                         <th>Métrica</th>
                         <th>Valor</th>
                     </tr>
@@ -154,14 +184,17 @@
 </div>
 
 <script>
-    // Mostrar/ocultar campos com base no modelo selecionado
     document.getElementById('model_type').addEventListener('change', function () {
         const model = this.value;
+
+        // Exibir/ocultar parâmetros com base no modelo selecionado
         document.getElementById('random_forest_params').style.display = (model === 'random_forest') ? 'block' : 'none';
+        document.getElementById('logistic_regression_params').style.display = (model === 'logistic_regression') ? 'block' : 'none';
     });
 
-    // Dispara o evento para ajustar a interface com base no modelo selecionado inicialmente
+    // Configuração inicial com base no modelo atualmente selecionado
     document.getElementById('model_type').dispatchEvent(new Event('change'));
 </script>
+
 </body>
 </html>

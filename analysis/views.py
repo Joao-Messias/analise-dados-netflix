@@ -144,16 +144,32 @@ def ml_analysis(request):
     context = {'columns': df.columns}
 
     if request.method == 'POST':
-        # Obter configurações do formulário
+        # Obter valores enviados
         model_type = request.POST.get('model_type', 'random_forest')
-        n_estimators = int(request.POST.get('n_estimators', 100)) if model_type == 'random_forest' else None
+        n_estimators = request.POST.get('n_estimators', 100)
+        max_depth = request.POST.get('max_depth', '')
+
+        # Parâmetros específicos de Regressão Logística
+        penalty = request.POST.get('penalty', 'l2')
+        regularization_c = request.POST.get('regularization_c', 1.0)
+        l1_ratio = request.POST.get('l1_ratio', None)
 
         try:
-            # Treinar o modelo escolhido
+            # Converter valores para os tipos adequados
+            n_estimators = int(n_estimators) if n_estimators else 100
+            max_depth = int(max_depth) if max_depth else None
+            regularization_c = float(regularization_c) if regularization_c else 1.0
+            l1_ratio = float(l1_ratio) if l1_ratio else None
+
+            # Treinar o modelo
             model, processed_data = MLModelHandler.train_model(
                 data=df,
                 model_type=model_type,
                 n_estimators=n_estimators,
+                max_depth=max_depth,
+                penalty=penalty,
+                regularization_c=regularization_c,
+                l1_ratio=l1_ratio,
                 target_type='movie'
             )
 
@@ -172,12 +188,22 @@ def ml_analysis(request):
                 'f1_score': f1_score(y_true, y_pred, zero_division=0),
             }
 
-            # Atualizar contexto com métricas e gráficos
+            # Atualizar contexto com métricas
             context.update({
                 'metrics': metrics,
                 'combined_probability_chart': combined_probability_chart,
             })
         except Exception as e:
             context['error'] = f"Ocorreu um erro ao treinar o modelo: {str(e)}"
+
+        # Manter os valores enviados no contexto
+        context.update({
+            'model_type': model_type,
+            'n_estimators': n_estimators,
+            'max_depth': max_depth if max_depth is not None else '',
+            'penalty': penalty,
+            'regularization_c': regularization_c,
+            'l1_ratio': l1_ratio if l1_ratio is not None else '',
+        })
 
     return render(request, 'analysis/ml_dashboard.html', context)

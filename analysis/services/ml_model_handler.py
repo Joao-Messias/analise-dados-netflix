@@ -43,7 +43,8 @@ class MLModelHandler:
         return data.dropna(subset=['Hour', 'Target'])
 
     @staticmethod
-    def train_model(data, model_type='random_forest', n_estimators=100, target_type='movie'):
+    def train_model(data, model_type='random_forest', n_estimators=100, max_depth=None, 
+                    penalty='l2', regularization_c=1.0, l1_ratio=None, target_type='movie'):
         """
         Treina um modelo para prever filmes ou séries, usando SMOTE para balancear os dados.
         """
@@ -65,9 +66,18 @@ class MLModelHandler:
 
         # Selecionar e treinar o modelo
         if model_type == 'random_forest':
-            model = RandomForestClassifier(n_estimators=n_estimators, random_state=42)
+            model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=42)
         elif model_type == 'logistic_regression':
-            model = LogisticRegression(max_iter=1000, random_state=42)
+            if penalty == 'elasticnet' and l1_ratio is None:
+                raise ValueError("l1_ratio deve ser especificado para a penalidade ElasticNet.")
+            model = LogisticRegression(
+                penalty=penalty,
+                C=regularization_c,
+                l1_ratio=l1_ratio if penalty == 'elasticnet' else None,
+                solver='saga' if penalty in ['l1', 'elasticnet'] else 'lbfgs',
+                max_iter=1000,
+                random_state=42
+            )
         else:
             raise ValueError("Modelo inválido. Escolha entre 'random_forest' ou 'logistic_regression'.")
 
@@ -78,6 +88,7 @@ class MLModelHandler:
         processed_data['Probability'] = model.predict_proba(X_processed)[:, 1]
 
         return model, processed_data
+
 
     @staticmethod
     def generate_combined_probability_chart(data):
