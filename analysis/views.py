@@ -5,6 +5,8 @@ import pandas as pd
 import logging
 from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
+
 from netflix import settings
 from .services.file_handler import FileHandler
 from .services.data_cleaner import DataCleaner
@@ -138,44 +140,42 @@ def ml_analysis(request):
 
     # Carregar os dados preprocessados
     df = pd.read_json(uploaded_data)
-    sessions = MetricsHandler.preprocess_sessions(df, max_gap_minutes=30)
 
     context = {'columns': df.columns}
 
     if request.method == 'POST':
-        # Recuperar as configurações do formulário
-        model_type = request.POST.get('model_type')
-        max_depth = request.POST.get('max_depth', None)
-        n_neighbors = request.POST.get('n_neighbors', None)
-
-        # Lista de modelos válidos
-        valid_models = ['linear_regression', 'random_forest', 'decision_tree', 'knn']
-
-        if model_type not in valid_models:
-            context['error'] = f"Modelo '{model_type}' não é válido. Escolha entre: {', '.join(valid_models)}"
-            return render(request, 'analysis/ml_dashboard.html', context)
-
-        # Parâmetros do modelo
-        params = {}
-        if model_type in ['random_forest', 'decision_tree'] and max_depth:
-            params['max_depth'] = int(max_depth)
-        if model_type == 'knn' and n_neighbors:
-            params['n_neighbors'] = int(n_neighbors)
+        # Obter configurações do formulário
+        model_type = request.POST.get('model_type', 'random_forest')
+        n_estimators = int(request.POST.get('n_estimators', 100)) if model_type == 'random_forest' else None
 
         try:
-            # Treinar o modelo
-            result = MLModelHandler.train_watch_duration_model(sessions, model_type=model_type, **params)
+            # Treinar o modelo escolhido
+            model, processed_data = MLModelHandler.train_model(
+                data=df,
+                model_type=model_type,
+                n_estimators=n_estimators,
+                target_type='movie'
+            )
 
-            # Predizer horas por perfil
-            profile_predictions = MLModelHandler.predict_watch_time_by_profile(sessions, result['model'])
+            # Gerar gráfico de probabilidade combinada
+            combined_probability_chart = MLModelHandler.generate_combined_probability_chart(df)
 
-            # Gerar gráfico de predição por perfil
-            profile_chart = MLModelHandler.generate_profile_prediction_chart(profile_predictions)
+            # Métricas de Avaliação
+            X = pd.get_dummies(processed_data[['Hour']], drop_first=True)
+            y_true = processed_data['Target']
+            y_pred = model.predict(X)
 
-            # Adicionar os resultados ao contexto
+            metrics = {
+                'accuracy': accuracy_score(y_true, y_pred),
+                'precision': precision_score(y_true, y_pred, zero_division=0),
+                'recall': recall_score(y_true, y_pred, zero_division=0),
+                'f1_score': f1_score(y_true, y_pred, zero_division=0),
+            }
+
+            # Atualizar contexto com métricas e gráficos
             context.update({
-                'mse': result['mse'],
-                'profile_chart': profile_chart,
+                'metrics': metrics,
+                'combined_probability_chart': combined_probability_chart,
             })
         except Exception as e:
             context['error'] = f"Ocorreu um erro ao treinar o modelo: {str(e)}"

@@ -1,38 +1,167 @@
-<h2 class="text-center">Configurar Modelo de Machine Learning</h2>
-<form method="post">
-    {% csrf_token %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Modelo de Machine Learning</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilo Global */
+        body {
+            background-color: #141414;
+            color: #e5e5e5;
+            font-family: 'Roboto', sans-serif;
+        }
 
-    <!-- Seleção do Modelo -->
-    <div class="form-group">
-        <label for="model_type">Escolha o Modelo</label>
-        <select class="form-control" id="model_type" name="model_type" required>
-            <option value="linear_regression">Regressão Linear</option>
-            <option value="random_forest">Random Forest</option>
-            <option value="decision_tree">Árvore de Decisão</option>
-            <option value="knn">K-Nearest Neighbors (KNN)</option>
-        </select>
+        h1, h2, h3 {
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            background-color: #e50914;
+            border: none;
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            background-color: #ff6060;
+        }
+
+        .card {
+            background-color: #1f1f1f;
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+        }
+
+        .metric-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #e5e5e5;
+            padding: 1vh;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            color: #e50914;
+        }
+
+        table {
+            color: #e5e5e5;
+        }
+
+        table thead th {
+            border-bottom: 2px solid #333333;
+            text-align: center;
+        }
+
+        table tbody tr:hover {
+            background-color: #333333;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        .img-fluid {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <!-- Título -->
+    <h1 class="text-center">Configurar Modelo de Machine Learning</h1>
+    <p class="text-center">Selecione o modelo desejado e ajuste os parâmetros para treinar os dados.</p>
+
+    <!-- Formulário -->
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+
+        <!-- Seleção do Modelo -->
+        <div class="form-group mb-4">
+            <label for="model_type" class="metric-title">Escolha o Modelo</label>
+            <select class="form-control" id="model_type" name="model_type" required>
+                <option value="random_forest">Random Forest</option>
+                <option value="logistic_regression">Regressão Logística</option>
+            </select>
+        </div>
+
+        <!-- Parâmetros Específicos -->
+        <div id="random_forest_params">
+            <div class="form-group mb-3">
+                <label for="n_estimators" class="metric-title">Número de Árvores (Random Forest)</label>
+                <input type="number" class="form-control" id="n_estimators" name="n_estimators" value="100" min="1">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Treinar Modelo</button>
+    </form>
+
+    <!-- Resultados -->
+    <div class="container mt-5">
+        <h2 class="text-center">Resultados do Modelo</h2>
+
+        <!-- Métricas -->
+        {% if metrics %}
+        <div class="card p-4 mt-4">
+            <h3 class="metric-title">Métricas do Modelo</h3>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Acurácia</td>
+                        <td>{{ metrics.accuracy|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Precisão</td>
+                        <td>{{ metrics.precision|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Recall</td>
+                        <td>{{ metrics.recall|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>F1-Score</td>
+                        <td>{{ metrics.f1_score|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <!-- Gráficos -->
+        {% if combined_probability_chart %}
+        <div class="card p-4 mt-4">
+            <h3 class="metric-title">Probabilidade de Assistir a Filmes e Séries por Período de Horário</h3>
+            <img src="data:image/png;base64,{{ combined_probability_chart }}" alt="Probabilidade Combinada" class="img-fluid">
+        </div>
+        {% endif %}
+
+        <!-- Erro -->
+        {% if error %}
+        <div class="alert alert-danger mt-4" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
     </div>
-
-    <!-- Parâmetros Específicos -->
-    <div class="form-group">
-        <label for="max_depth">Profundidade Máxima (Random Forest / Decision Tree)</label>
-        <input type="number" class="form-control" id="max_depth" name="max_depth" placeholder="Ex.: 5">
-    </div>
-
-    <div class="form-group">
-        <label for="n_neighbors">Número de Vizinhos (KNN)</label>
-        <input type="number" class="form-control" id="n_neighbors" name="n_neighbors" placeholder="Ex.: 3">
-    </div>
-
-    <button type="submit" class="btn btn-primary">Treinar Modelo</button>
-</form>
-
-
-<h2 class="text-center">Resultados do Modelo</h2>
-
-{% if profile_chart %}
-<div class="card mt-4">
-    <h4 class="card-title text-center">Predição de Horas por Perfil</h4>
-    <img src="data:image/png;base64,{{ profile_chart }}" alt="Gráfico de Predição por Perfil" class="img-fluid">
 </div>
-{% endif %}
+
+<script>
+    // Mostrar/ocultar campos com base no modelo selecionado
+    document.getElementById('model_type').addEventListener('change', function () {
+        const model = this.value;
+        document.getElementById('random_forest_params').style.display = (model === 'random_forest') ? 'block' : 'none';
+    });
+
+    // Dispara o evento para ajustar a interface com base no modelo selecionado inicialmente
+    document.getElementById('model_type').dispatchEvent(new Event('change'));
+</script>
+</body>
+</html>

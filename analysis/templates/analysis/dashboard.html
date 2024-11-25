@@ -59,14 +59,14 @@
         }
 
         h1 {
-            text-shadow: 2px 2px 4px #e50914;  
+            text-shadow: 2px 2px 4px #e50914;
         }
 
         .card img {
             width: 100%;
             height: auto;
-            max-height: 400px;  
-            object-fit: contain; 
+            max-height: 400px;
+            object-fit: contain;
         }
 
         .metric-title {
@@ -75,7 +75,7 @@
             color: #e5e5e5;
             padding: 1vh;
 
-            
+
         }
 
         .metric-value {
@@ -99,16 +99,16 @@
             table-layout: fixed;
         }
 
-        .table td, 
+        .table td,
         .table th {
-            word-wrap: break-word; 
+            word-wrap: break-word;
             word-break: break-word;
-            white-space: normal; 
-            overflow-wrap: anywhere; 
-            text-align: center; 
-            vertical-align: middle; 
+            white-space: normal;
+            overflow-wrap: anywhere;
+            text-align: center;
+            vertical-align: middle;
         }
-        
+
         .table thead th {
             vertical-align: center;
             border-bottom: 2px solid #dee2e6;
@@ -118,184 +118,190 @@
             background-color: #333333;
         }
 
-        
-       
+
     </style>
 </head>
 
 <body>
-    <div class="mt-12" style="padding: 10vh; padding-top: 5vh;">
-        <h1 class="text-center">Dashboard de Análise</h1>
-        <p class="text-center">Veja abaixo as métricas e gráficos gerados a partir dos dados enviados.</p>
-        <div class="d-flex justify-content-center align-items-center" style="height: 10vh;">
-            <form method="get" class="form-inline">
-                <!-- Filtro por Usuário -->
-                <div class="form-group" style="padding-right: 1vh;">
-                    <label for="user" class="sr-only">Usuário</label>
-                    <select name="user" id="user" class="form-control">
-                        <option value="">Todos os Usuários</option>
-                        {% for user in user_list %}
-                            <option value="{{ user }}" {% if user == selected_user %}selected{% endif %}>
-                                {{ user }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-        
-                <!-- Filtro por Ano -->
-                <div class="form-group" style="padding-right: 1vh;">
-                    <label for="year" class="sr-only">Ano</label>
-                    <select name="year" id="year" class="form-control">
-                        <option value="">Todos os Anos</option>
-                        {% for year in year_list %}
-                            <option value="{{ year }}" {% if year|stringformat:"s" == selected_year %}selected{% endif %}>
-                                {{ year }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-        
-                <!-- Botão de Enviar -->
-                <button type="submit" class="btn btn-primary">Filtrar</button>
-            </form>
+<div class="mt-12" style="padding: 10vh; padding-top: 5vh;">
+    <h1 class="text-center">Dashboard de Análise</h1>
+    <div class="container mt-4">
+        <!-- Botão para ML Dashboard -->
+        <div class="d-flex justify-content-end">
+            <a href="{% url 'analysis:ml_dashboard' %}" class="btn btn-primary">Ir para ML Dashboard</a>
         </div>
-        
-
-        <!-- Grade de Métricas -->
-        <div class="row mx-auto d-flex justify-content-center" style="padding-bottom: 2vh; width: 75%;">
-            <!-- Total de Sessões -->
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="metric-title">Total de Sessões</div>
-                    <div class="metric-value">{{ total_sessions }}</div>
-                </div>
-            </div>
-        
-            <!-- Tempo Total Consumido -->
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="metric-title">Tempo Total Consumido (Horas)</div>
-                    <div class="metric-value">{{ total_time }}</div>
-                </div>
-            </div>
-        
-            <!-- Ranking de Atividade por Usuário -->
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="metric-title">Ranking de Atividade</div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="width: 10%;">#</th>
-                                <th style="width: 45%;">Perfil</th>
-                                <th style="width: 45%;">Horas Totais</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in ranking_by_hours %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ item.Profile_Name }}</td>
-                                <td>{{ item.Total_Hours }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        
-            <!-- Top 5 Títulos mais assistidos -->
-            <div class="col-md-3 " >
-                <div class="card">
-                    <div class="metric-title">Top 5 Títulos mais assistidos</div>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="width: 55%;">Título</th>
-                                <th style="width: 45%;">Total de Horas</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for title in top_5_titles %}
-                            <tr>
-                                <td>{{ title.Base_Title }}</td>
-                                <td>{{ title.Total_Hours }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Grade de Gráficos -->
-        <div class="row d-flex justify-content-center" style="padding-bottom: 2vh; width: 100%;">
-            <!-- Gráfico: Tempo Médio de Uso por Dia da Semana -->
-            <div class="col-md-14" style="padding-right: 2vh;">
-                <div class="card">
-                    <div class="metric-title">Tempo Médio de Uso por Dia da Semana</div>
-                    {% if average_usage_chart %}
-                    <img src="data:image/png;base64,{{ average_usage_chart }}" class="img-fluid">
-                    {% else %}
-                    <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
-                    {% endif %}
-                </div>
+    </div>
+    <p class="text-center">Veja abaixo as métricas e gráficos gerados a partir dos dados enviados.</p>
+    <div class="d-flex justify-content-center align-items-center" style="height: 10vh;">
+        <form method="get" class="form-inline">
+            <!-- Filtro por Usuário -->
+            <div class="form-group" style="padding-right: 1vh;">
+                <label for="user" class="sr-only">Usuário</label>
+                <select name="user" id="user" class="form-control">
+                    <option value="">Todos os Usuários</option>
+                    {% for user in user_list %}
+                        <option value="{{ user }}" {% if user == selected_user %}selected{% endif %}>
+                            {{ user }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
 
-            <!-- Gráfico: Frequência Assistida por Mês -->
-            <div class="col-md-14">
-                <div class="card">
-                    <div class="metric-title">Frequência por Mês</div>
-                    {% if monthly_activity_chart %}
-                    <img src="data:image/png;base64,{{ monthly_activity_chart }}" alt="Gráfico de Frequência Mensal" class="img-fluid">
-                    {% else %}
-                    <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
-                    {% endif %}
-                </div>
+            <!-- Filtro por Ano -->
+            <div class="form-group" style="padding-right: 1vh;">
+                <label for="year" class="sr-only">Ano</label>
+                <select name="year" id="year" class="form-control">
+                    <option value="">Todos os Anos</option>
+                    {% for year in year_list %}
+                        <option value="{{ year }}" {% if year|stringformat:"s" == selected_year %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Botão de Enviar -->
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </form>
+    </div>
+
+
+    <!-- Grade de Métricas -->
+    <div class="row mx-auto d-flex justify-content-center" style="padding-bottom: 2vh; width: 75%;">
+        <!-- Total de Sessões -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="metric-title">Total de Sessões</div>
+                <div class="metric-value">{{ total_sessions }}</div>
             </div>
         </div>
 
-
-        <!-- Outras Análises -->
-        <div class="row d-flex justify-content-center" style="padding-bottom: 2vh; width: 100%;">
-            <!-- Comparação Série x Filme -->
-            <div class="col-md-14" style="padding-right: 2vh;">
-                <div class="card">
-                    <div class="metric-title">Comparação: Filmes vs Séries por Perfil</div>
-                    <img src="data:image/png;base64,{{ movie_vs_series_chart }}" alt="Gráfico de Filmes vs Séries"
-                        class="img-fluid">
-                </div>
-            </div>
-            <!-- Tempo Gasto por Título -->
-            <div class="col-md-14">
-                <div class="card">
-                    <div class="metric-title">Tempo Gasto por Título</div>
-                    <img src="data:image/png;base64,{{ graph_time_spent_chart }}" alt="" class="img-fluid">
-                </div>
+        <!-- Tempo Total Consumido -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="metric-title">Tempo Total Consumido (Horas)</div>
+                <div class="metric-value">{{ total_time }}</div>
             </div>
         </div>
 
+        <!-- Ranking de Atividade por Usuário -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="metric-title">Ranking de Atividade</div>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th style="width: 10%;">#</th>
+                        <th style="width: 45%;">Perfil</th>
+                        <th style="width: 45%;">Horas Totais</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in ranking_by_hours %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ item.Profile_Name }}</td>
+                            <td>{{ item.Total_Hours }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-        <div class="row d-flex justify-content-center">
-            <div class="col-md-14">
-                <div class="card mt-14">
-                    <div class="card">
-                        <div class="metric-title text-center">Atividade Mensal</div>
-                        {% if monthly_activity_chart %}
-                        <img src="data:image/png;base64,{{ monthly_activity_user_chart }}"
-                            alt="Gráfico de Atividade Mensal" class="img-fluid">
-                        {% else %}
-                        <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
-                        {% endif %}
-                    </div>
-                </div>
+        <!-- Top 5 Títulos mais assistidos -->
+        <div class="col-md-3 ">
+            <div class="card">
+                <div class="metric-title">Top 5 Títulos mais assistidos</div>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th style="width: 55%;">Título</th>
+                        <th style="width: 45%;">Total de Horas</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for title in top_5_titles %}
+                        <tr>
+                            <td>{{ title.Base_Title }}</td>
+                            <td>{{ title.Total_Hours }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Grade de Gráficos -->
+    <div class="row d-flex justify-content-center" style="padding-bottom: 2vh; width: 100%;">
+        <!-- Gráfico: Tempo Médio de Uso por Dia da Semana -->
+        <div class="col-md-14" style="padding-right: 2vh;">
+            <div class="card">
+                <div class="metric-title">Tempo Médio de Uso por Dia da Semana</div>
+                {% if average_usage_chart %}
+                    <img src="data:image/png;base64,{{ average_usage_chart }}" class="img-fluid">
+                {% else %}
+                    <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Gráfico: Frequência Assistida por Mês -->
+        <div class="col-md-14">
+            <div class="card">
+                <div class="metric-title">Frequência por Mês</div>
+                {% if monthly_activity_chart %}
+                    <img src="data:image/png;base64,{{ monthly_activity_chart }}" alt="Gráfico de Frequência Mensal"
+                         class="img-fluid">
+                {% else %}
+                    <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Outras Análises -->
+    <div class="row d-flex justify-content-center" style="padding-bottom: 2vh; width: 100%;">
+        <!-- Comparação Série x Filme -->
+        <div class="col-md-14" style="padding-right: 2vh;">
+            <div class="card">
+                <div class="metric-title">Comparação: Filmes vs Séries por Perfil</div>
+                <img src="data:image/png;base64,{{ movie_vs_series_chart }}" alt="Gráfico de Filmes vs Séries"
+                     class="img-fluid">
+            </div>
+        </div>
+        <!-- Tempo Gasto por Título -->
+        <div class="col-md-14">
+            <div class="card">
+                <div class="metric-title">Tempo Gasto por Título</div>
+                <img src="data:image/png;base64,{{ graph_time_spent_chart }}" alt="" class="img-fluid">
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-14">
+            <div class="card mt-14">
+                <div class="card">
+                    <div class="metric-title text-center">Atividade Mensal</div>
+                    {% if monthly_activity_chart %}
+                        <img src="data:image/png;base64,{{ monthly_activity_user_chart }}"
+                             alt="Gráfico de Atividade Mensal" class="img-fluid">
+                    {% else %}
+                        <p class="text-center text-danger">Não foi possível gerar o gráfico.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 
 </html>

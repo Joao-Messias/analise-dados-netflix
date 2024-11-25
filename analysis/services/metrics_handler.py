@@ -1,8 +1,5 @@
 import pandas as pd
 import matplotlib
-from django.shortcuts import redirect
-
-from analysis.services.ml_model_handler import MLModelHandler
 
 matplotlib.use('Agg')  # Força o uso de um backend sem GUI
 import matplotlib.pyplot as plt
