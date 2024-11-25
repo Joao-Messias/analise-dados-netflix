@@ -1,18 +1,36 @@
-### **Netflix Análise de Dados Pessoais**
 
-Este projeto permite que você analise seus dados pessoais de visualização da Netflix. Com ele, você pode descobrir padrões interessantes no seu consumo de filmes e séries, como os dias da semana e meses mais assistidos, além de identificar seus filmes e séries favoritos.
+markdown
+Copiar código
+# Netflix Data Analyzer
 
-O objetivo é ajudar você a entender melhor como utiliza a plataforma, fornecendo gráficos claros e listas organizadas para consulta.
+Este é um aplicativo web para análise e visualização de dados de consumo da plataforma Netflix. O sistema permite o upload de datasets no formato CSV, gera gráficos interativos e realiza análises com base em métricas diversas, além de treinar modelos de machine learning para predição de padrões de consumo.
+
 
 ---
 
-### **Funcionalidades**
-- **Dias Mais Assistidos:** Veja quais dias da semana você mais utiliza a Netflix.
-- **Frequência por Mês:** Descubra em quais meses você assistiu mais conteúdo.
-- **Comparação entre Filmes e Séries:** Descubra se você prefere assistir filmes ou séries, além de ver padrões por dia da semana.
-- **Filmes Mais Assistidos:** Uma lista dos filmes que você mais viu.
-- **Séries Mais Assistidas:** Lista de séries mais vistas, considerando todos os episódios e temporadas.
-- **Gráficos:** Resultados apresentados em gráficos simples e em português.
+# 🚀 Funcionalidades
+
+- **Upload de arquivos CSV**: Carregue datasets para análise de consumo de conteúdo.
+- **Visualização dos dados carregados**: Exiba os dados tratados e limpos.
+- **Gráficos interativos**: Explore métricas de uso e padrões com gráficos intuitivos por usuário.
+- **Múltiplos tipos de análises e métricas**:
+  - Total de horas assistidas
+  - Sessões totais
+  - Ranking de perfis mais ativos
+  - Top 5 títulos mais assistidos
+  - Gráficos semanais, mensais e por título
+- **Modelos de Machine Learning**:
+  - Treinamento com Random Forest ou Regressão Logística
+  - Configuração personalizada de parâmetros
+  - Análise de probabilidade de assistir filmes ou séries em diferentes horários do dia
+  - Visualização de métricas de desempenho, como precisão, recall e F1-score.
+
+---
+
+## 📋 Pré-requisitos
+
+- **Python 3.7+**
+- **pip** (gerenciador de pacotes Python)
 
 ---
 
@@ -26,10 +44,30 @@ O objetivo é ajudar você a entender melhor como utiliza a plataforma, fornecen
 
 ---
 
+### 📦 Dependências Principais
+- Django: Framework web para construir o backend.
+- pandas: Manipulação de dados.
+- numpy: Operações matemáticas e vetoriais.
+- matplotlib: Criação de gráficos.
+- scikit-learn: Machine Learning e métricas.
+- imbalanced-learn: Balanceamento de dados usando SMOTE.
+
+---
+
 ### **Como Usar**
 1. Faça o download deste projeto ou clone o repositório.
 2. Instale o Python em sua máquina (se ainda não estiver instalado).
-3. Coloque o arquivo `ViewingActivity.csv` que você baixou da Netflix na pasta de upload disponível no sistema.
+3. Crie um ambiente virtual (recomendado):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/Mac
+   venv\Scripts\activate     # Windows
+   ```
+4. Instale as dependencias necessárias.
+   ```bash
+   cd analise-dados-netflix
+   pip install -r requirements.txt
+   ```
 4. Execute o projeto no terminal:
    ```bash
    python manage.py runserver
@@ -53,7 +91,16 @@ O objetivo é ajudar você a entender melhor como utiliza a plataforma, fornecen
 4. **Lista de Séries Mais Assistidas:**
    Séries que você mais assistiu, considerando todas as temporadas e episódios.
 
+5. **Gráfico de atividade mensal por usuário**
+   Um gráfico que indica a atividade mensal por usuário.
 ---
+
+### 📈 Métricas de Avaliação
+- Relatório completo de classificação:
+- Precisão
+- Recall
+- F1-Score
+- Matriz de confusão visual
 
 ### **Observações**
 - Certifique-se de que o arquivo `ViewingActivity.csv` foi baixado corretamente da Netflix.
@@ -64,3 +111,8 @@ O objetivo é ajudar você a entender melhor como utiliza a plataforma, fornecen
 ### **Contribuições**
 Se você quiser contribuir ou melhorar este projeto, sinta-se à vontade para compartilhar ideias ou sugestões. Divirta-se analisando seu tempo na Netflix! 🎥📊
 
+### **Autores**
+- João Pedro Messias
+- Milena Schrickte
+- Gustavo Guedes
+- Gabriel Rossa
